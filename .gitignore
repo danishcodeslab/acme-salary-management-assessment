@@ -10,6 +10,8 @@ htmlcov/
 # Data
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 
 # Node
 node_modules/
