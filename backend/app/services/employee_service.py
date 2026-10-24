@@ -49,6 +49,10 @@ class EmployeeService:
             items=[to_out(e) for e in items], total=total, page=page, size=size
         )
 
+    def export(self, filters: EmployeeFilters, sort: SortField, order: SortOrder) -> list[Employee]:
+        items, _ = self.repo.list(filters, sort, order, limit=None)
+        return items
+
     def get(self, employee_id: int) -> Employee:
         employee = self.repo.get(employee_id)
         if employee is None:

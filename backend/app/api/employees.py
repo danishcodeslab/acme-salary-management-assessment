@@ -1,4 +1,7 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.deps import get_db
@@ -13,6 +16,7 @@ from app.schemas import (
     SortField,
     SortOrder,
 )
+from app.services.csv_export import employees_csv
 from app.services.employee_service import EmployeeService, to_out
 
 router = APIRouter(prefix="/employees", tags=["employees"])
@@ -50,6 +54,23 @@ def list_employees(
     service: EmployeeService = Depends(get_service),
 ) -> Page[EmployeeOut]:
     return service.list(filters, sort, order, page, size)
+
+
+# Declared before "/{employee_id}" so the literal path wins.
+@router.get("/export.csv", response_class=StreamingResponse)
+def export_employees(
+    filters: EmployeeFilters = Depends(get_filters),
+    sort: SortField = "employee_code",
+    order: SortOrder = "asc",
+    service: EmployeeService = Depends(get_service),
+) -> StreamingResponse:
+    """Download every employee matching the filters (not just one page) as CSV."""
+    filename = f"employees-{date.today().isoformat()}.csv"
+    return StreamingResponse(
+        employees_csv(service.export(filters, sort, order)),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("", response_model=EmployeeOut, status_code=status.HTTP_201_CREATED)
