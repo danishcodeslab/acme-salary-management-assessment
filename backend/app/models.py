@@ -74,7 +74,9 @@ class SalaryChange(Base):
         ForeignKey("employees.id", ondelete="CASCADE"), index=True
     )
     old_salary: Mapped[int] = mapped_column(Integer)
+    old_currency: Mapped[str] = mapped_column(String(3))
     new_salary: Mapped[int] = mapped_column(Integer)
+    # Currency of new_salary; differs from old_currency when the employee moved country.
     currency: Mapped[str] = mapped_column(String(3))
     effective_date: Mapped[date] = mapped_column(Date)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)

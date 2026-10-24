@@ -9,6 +9,7 @@ from app.schemas import (
     EmployeeOut,
     EmployeeUpdate,
     Page,
+    SalaryChangeOut,
     SortField,
     SortOrder,
 )
@@ -74,3 +75,11 @@ def update_employee(
 def delete_employee(employee_id: int, service: EmployeeService = Depends(get_service)) -> Response:
     service.delete(employee_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{employee_id}/salary-history", response_model=list[SalaryChangeOut])
+def salary_history(
+    employee_id: int, service: EmployeeService = Depends(get_service)
+) -> list[SalaryChangeOut]:
+    """Salary changes for one employee, newest first."""
+    return [SalaryChangeOut.model_validate(c) for c in service.salary_history(employee_id)]

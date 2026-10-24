@@ -1,8 +1,10 @@
+from datetime import date
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.errors import ConflictError, NotFoundError
-from app.models import Employee
+from app.errors import ConflictError, DomainError, NotFoundError
+from app.models import Employee, SalaryChange
 from app.repositories.employee_repository import EmployeeRepository
 from app.schemas import (
     EmployeeCreate,
@@ -23,6 +25,10 @@ def to_out(employee: Employee) -> EmployeeOut:
             "salary_usd": to_usd(employee.salary, employee.currency),
         }
     )
+
+
+class InvalidChangeError(DomainError):
+    status_code = 422
 
 
 class EmployeeService:
@@ -63,17 +69,43 @@ class EmployeeService:
 
     def update(self, employee_id: int, data: EmployeeUpdate) -> Employee:
         employee = self.get(employee_id)
-        changes = data.model_dump(exclude_unset=True, exclude_none=True)
+        changes = data.model_dump(
+            exclude_unset=True,
+            exclude_none=True,
+            exclude={"salary_change_reason", "salary_effective_date"},
+        )
 
         if "email" in changes and changes["email"] != employee.email:
             self._ensure_email_available(changes["email"])
         if "country" in changes:
             changes["currency"] = currency_for(changes["country"])
+            if changes["currency"] != employee.currency and "salary" not in changes:
+                # Otherwise "80,000 GBP" would silently become "80,000 INR".
+                raise InvalidChangeError(
+                    "Changing country changes the salary currency; provide the new salary too"
+                )
+
+        new_salary = changes.get("salary", employee.salary)
+        new_currency = changes.get("currency", employee.currency)
+        if (new_salary, new_currency) != (employee.salary, employee.currency):
+            employee.salary_history.append(
+                SalaryChange(
+                    old_salary=employee.salary,
+                    old_currency=employee.currency,
+                    new_salary=new_salary,
+                    currency=new_currency,
+                    effective_date=data.salary_effective_date or date.today(),
+                    reason=data.salary_change_reason or None,
+                )
+            )
 
         for field, value in changes.items():
             setattr(employee, field, value)
         self._commit()
         return employee
+
+    def salary_history(self, employee_id: int) -> list[SalaryChange]:
+        return list(self.get(employee_id).salary_history)
 
     def delete(self, employee_id: int) -> None:
         self.repo.delete(self.get(employee_id))

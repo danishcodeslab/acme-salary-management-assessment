@@ -59,6 +59,11 @@ class EmployeeUpdate(BaseModel):
     salary: Salary | None = None
     employment_type: EmploymentType | None = None
     hire_date: date | None = None
+    # Recorded in salary history when `salary` changes; ignored otherwise.
+    salary_change_reason: (
+        Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] | None
+    ) = None
+    salary_effective_date: date | None = None
 
     _country = field_validator("country")(_validate_country)
     _hire_date = field_validator("hire_date")(_validate_hire_date)
@@ -67,6 +72,19 @@ class EmployeeUpdate(BaseModel):
     @classmethod
     def _normalize_email(cls, value: str) -> str:
         return value.lower()
+
+
+class SalaryChangeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    old_salary: int
+    old_currency: str
+    new_salary: int
+    currency: str
+    effective_date: date
+    reason: str | None
+    created_at: datetime
 
 
 class EmployeeOut(BaseModel):

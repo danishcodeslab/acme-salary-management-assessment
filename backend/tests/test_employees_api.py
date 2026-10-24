@@ -81,9 +81,12 @@ class TestReadUpdateDelete:
     def test_changing_country_updates_currency(self, client, create_employee):
         created = create_employee(country="GB")
 
-        body = client.patch(f"/api/employees/{created['id']}", json={"country": "IN"}).json()
+        body = client.patch(
+            f"/api/employees/{created['id']}", json={"country": "IN", "salary": 6_000_000}
+        ).json()
 
         assert body["currency"] == "INR"
+        assert body["salary_usd"] == 71_856
 
     def test_patch_to_taken_email_is_conflict(self, client, create_employee):
         create_employee(email="taken@acme.example")
