@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import { NotifierProvider } from "./components/Notifier";
+import { ROUTER_FUTURE } from "./routerFuture";
 import { theme } from "./theme";
 
 const queryClient = new QueryClient({
@@ -18,7 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <NotifierProvider>
-          <BrowserRouter>
+          <BrowserRouter future={ROUTER_FUTURE}>
             <App />
           </BrowserRouter>
         </NotifierProvider>

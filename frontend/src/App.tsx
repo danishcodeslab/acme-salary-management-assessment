@@ -15,7 +15,12 @@ export default function App() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <AppBar
+        position="sticky"
+        color="inherit"
+        elevation={0}
+        sx={{ borderBottom: 1, borderColor: "divider" }}
+      >
         <Toolbar sx={{ gap: 4 }}>
           <Typography variant="h6" component="div" sx={{ fontWeight: 700, color: "primary.main" }}>
             ACME · Salaries
