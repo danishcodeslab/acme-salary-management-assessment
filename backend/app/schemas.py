@@ -146,3 +146,56 @@ class FilterOptions(BaseModel):
     departments: list[str]
     job_titles: list[str]
     employment_types: list[EmploymentType]
+
+
+# ---- Insights -------------------------------------------------------------
+
+
+class InsightFilters(BaseModel):
+    employment_type: EmploymentType | None = None
+
+
+class Overview(BaseModel):
+    headcount: int
+    countries: int
+    departments: int
+    total_payroll_usd: int
+    avg_salary_usd: int
+    median_salary_usd: int
+
+
+class SalaryStats(BaseModel):
+    headcount: int
+    min_salary: int
+    max_salary: int
+    avg_salary: int
+    median_salary: int
+
+
+class CountryInsight(SalaryStats):
+    """Stats in the country's local currency, plus USD figures for comparison."""
+
+    country: str
+    country_name: str
+    currency: str
+    avg_salary_usd: int
+    median_salary_usd: int
+
+
+class JobTitleInsight(SalaryStats):
+    job_title: str
+    currency: str
+
+
+class DepartmentInsight(BaseModel):
+    department: str
+    headcount: int
+    total_payroll_usd: int
+    avg_salary_usd: int
+    median_salary_usd: int
+
+
+class DistributionBucket(BaseModel):
+    min_usd: int
+    max_usd: int | None  # None for the open-ended top bucket
+    count: int

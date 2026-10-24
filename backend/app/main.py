@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import employees, health, meta
+from app.api import employees, health, insights, meta
 from app.config import Settings, get_settings
 from app.db import make_engine, make_session_factory
 from app.errors import DomainError
@@ -28,7 +28,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def _domain_error(_request: Request, exc: DomainError) -> JSONResponse:
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
-    for module in (health, employees, meta):
+    for module in (health, employees, insights, meta):
         app.include_router(module.router, prefix="/api")
 
     _mount_frontend(app, settings)
