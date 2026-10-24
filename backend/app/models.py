@@ -3,12 +3,30 @@ from enum import StrEnum
 
 from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeDecorator
 
 from app.db import Base
 
 
 def utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+class UTCDateTime(TypeDecorator[datetime]):
+    """Timezone-aware UTC datetimes; SQLite drops tzinfo, so re-attach it on read."""
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value: datetime | None, dialect) -> datetime | None:
+        if value is not None and value.tzinfo is not None:
+            value = value.astimezone(UTC)
+        return value
+
+    def process_result_value(self, value: datetime | None, dialect) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value
 
 
 class EmploymentType(StrEnum):
@@ -37,10 +55,8 @@ class Employee(Base):
     salary: Mapped[int] = mapped_column(Integer, index=True)
     employment_type: Mapped[str] = mapped_column(String(16), default=EmploymentType.FULL_TIME)
     hire_date: Mapped[date] = mapped_column(Date)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, onupdate=utcnow
-    )
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
 
     salary_history: Mapped[list["SalaryChange"]] = relationship(
         back_populates="employee",
@@ -62,6 +78,6 @@ class SalaryChange(Base):
     currency: Mapped[str] = mapped_column(String(3))
     effective_date: Mapped[date] = mapped_column(Date)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     employee: Mapped[Employee] = relationship(back_populates="salary_history")

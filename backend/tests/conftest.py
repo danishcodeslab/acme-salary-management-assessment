@@ -26,3 +26,28 @@ def db(app):
     session = app.state.session_factory()
     yield session
     session.close()
+
+
+def employee_payload(**overrides) -> dict:
+    """A valid create payload; override any field per test."""
+    payload = {
+        "full_name": "Ada Lovelace",
+        "email": "ada@acme.example",
+        "job_title": "Software Engineer",
+        "department": "Engineering",
+        "country": "GB",
+        "salary": 80_000,
+        "employment_type": "full_time",
+        "hire_date": "2020-05-01",
+    }
+    return payload | overrides
+
+
+@pytest.fixture
+def create_employee(client):
+    def _create(**overrides) -> dict:
+        response = client.post("/api/employees", json=employee_payload(**overrides))
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    return _create
