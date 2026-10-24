@@ -10,3 +10,11 @@ afterEach(() => {
   cleanup();
 });
 afterAll(() => server.close());
+
+// jsdom lacks ResizeObserver, which MUI X Charts uses to size the SVG.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver;

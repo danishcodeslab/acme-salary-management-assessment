@@ -1,8 +1,20 @@
-import { AppBar, Box, Container, Tab, Tabs, Toolbar, Typography } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  CircularProgress,
+  Container,
+  Tab,
+  Tabs,
+  Toolbar,
+  Typography,
+} from "@mui/material";
+import { lazy, Suspense } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import EmployeesPage from "./pages/EmployeesPage";
-import InsightsPage from "./pages/InsightsPage";
+
+// Charts are the heaviest dependency; load them only when Insights is opened.
+const InsightsPage = lazy(() => import("./pages/InsightsPage"));
 
 const NAV = [
   { path: "/employees", label: "Employees" },
@@ -36,7 +48,16 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/employees" replace />} />
           <Route path="/employees" element={<EmployeesPage />} />
-          <Route path="/insights" element={<InsightsPage />} />
+          <Route
+            path="/insights"
+            element={
+              <Suspense
+                fallback={<CircularProgress sx={{ display: "block", mx: "auto", my: 8 }} />}
+              >
+                <InsightsPage />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<Navigate to="/employees" replace />} />
         </Routes>
       </Container>
