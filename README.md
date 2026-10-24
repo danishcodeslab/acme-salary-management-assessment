@@ -1,1 +1,1 @@
-# salary-management-assessment
+# acme-salary-management-assessment
