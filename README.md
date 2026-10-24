@@ -3,7 +3,7 @@
 A web app that lets ACME's HR Manager manage salaries for **10,000 employees across 12 countries**, replacing the
 Excel files, and answer **"how does the org pay people?"** in a couple of clicks.
 
-> **Live demo:** _add Render URL here_ · **Video walkthrough:** _add link here_
+**Video walkthrough:** (https://www.loom.com/share/eb5c0f10a3044c89aedbeb14ca44a5ae)
 
 | Employees | Insights |
 |---|---|
