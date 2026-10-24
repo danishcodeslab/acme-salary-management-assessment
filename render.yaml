@@ -1,0 +1,12 @@
+# Render Blueprint: one Docker web service serving API + SPA.
+# The free plan has an ephemeral filesystem, so the SQLite DB is re-created and
+# re-seeded (10,000 employees, ~0.2s) on each deploy/restart. Attach a disk at /data
+# (paid plans) or point DATABASE_URL at Postgres to persist edits.
+services:
+  - type: web
+    name: acme-salary-management
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
